@@ -1,0 +1,33 @@
+# See: https://taskfile.dev/docs/
+
+version: "3"
+
+tasks:
+  run-app:
+    aliases:
+      - run
+    desc: "Run application"
+    vars:
+      CONFIG_PATH: '{{default "./configs/local.yaml" .CONFIG_PATH}}'
+    env:
+      CONFIG_PATH: "{{.CONFIG_PATH}}"
+    cmds:
+      - go run cmd/app/main.go
+
+  migrate-up:
+    desc: "Up database migrations"
+    vars:
+      CONFIG_PATH: '{{default "./configs/local.yaml" .CONFIG_PATH}}'
+    env:
+      CONFIG_PATH: "{{.CONFIG_PATH}}"
+    cmds:
+      - go run cmd/migrator/main.go up
+
+  migrate-down:
+    desc: "Down database migrations"
+    vars:
+      CONFIG_PATH: '{{default "./configs/local.yaml" .CONFIG_PATH}}'
+    env:
+      CONFIG_PATH: "{{.CONFIG_PATH}}"
+    cmds:
+      - go run cmd/migrator/main.go down
