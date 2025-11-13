@@ -1,10 +1,8 @@
 package domains
 
-import "github.com/google/uuid"
-
 type User struct {
-	ID       uuid.UUID
+	ID       string
 	Name     string
-	TeamID   *uuid.UUID
+	TeamName *string
 	IsActive bool
 }
