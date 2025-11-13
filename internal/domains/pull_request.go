@@ -12,4 +12,5 @@ type PullRequest struct {
 	Status            string
 	NeedMoreReviewers bool
 	CreatedAt         time.Time
+	MergedAt          *time.Time
 }
