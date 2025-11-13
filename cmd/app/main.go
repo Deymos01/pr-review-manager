@@ -12,11 +12,17 @@ import (
 	"time"
 
 	"github.com/Deymos01/pr-review-manager/internal/config"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/create"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/merge"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/add"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/get"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/users/get_review"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/users/set_is_active"
 	mw "github.com/Deymos01/pr-review-manager/internal/httpserver/middlewares"
 	"github.com/Deymos01/pr-review-manager/internal/repository/postgres"
+	pr "github.com/Deymos01/pr-review-manager/internal/usecase/pull_request"
 	"github.com/Deymos01/pr-review-manager/internal/usecase/team"
+	"github.com/Deymos01/pr-review-manager/internal/usecase/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -43,6 +49,8 @@ func main() {
 	}
 
 	teamService := team.New(log, storage)
+	userService := user.New(log, storage)
+	prService := pr.New(log, storage)
 
 	router := chi.NewRouter()
 
@@ -62,13 +70,17 @@ func main() {
 	})
 
 	router.Route("/users", func(r chi.Router) {
-		r.Post("/setIsActive", nil)
-		r.Get("/getReview", nil)
+		r.Use(mw.AdminAuthMiddleware(cfg.AdminToken))
+
+		r.Post("/setIsActive", set_is_active.New(log, userService))
+		r.Get("/getReview", get_review.New(log, userService))
 	})
 
 	router.Route("/pullRequest", func(r chi.Router) {
-		r.Post("/create", nil)
-		r.Post("/merge", nil)
+		r.Use(mw.AdminAuthMiddleware(cfg.AdminToken))
+
+		r.Post("/create", create.New(log, prService))
+		r.Post("/merge", merge.New(log, prService))
 		r.Post("/reassign", nil)
 	})
 
