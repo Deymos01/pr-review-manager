@@ -14,6 +14,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/config"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/add"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/get"
+	mw "github.com/Deymos01/pr-review-manager/internal/httpserver/middlewares"
 	"github.com/Deymos01/pr-review-manager/internal/repository/postgres"
 	"github.com/Deymos01/pr-review-manager/internal/usecase/team"
 	"github.com/go-chi/chi/v5"
@@ -52,7 +53,12 @@ func main() {
 
 	router.Route("/team", func(r chi.Router) {
 		r.Post("/add", add.New(log, teamService))
-		r.Get("/get", get.New(log, teamService))
+
+		r.Group(func(r chi.Router) {
+			r.Use(mw.AdminAuthMiddleware(cfg.AdminToken))
+
+			r.Get("/get", get.New(log, teamService))
+		})
 	})
 
 	router.Route("/users", func(r chi.Router) {

@@ -5,6 +5,7 @@ http_server:
   port: 8080
   timeout: 4s
   idle_timeout: 60s
+  admin_token: "admin"
 postgres:
   host: "localhost"
   port: 5432
