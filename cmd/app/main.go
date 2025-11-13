@@ -12,7 +12,10 @@ import (
 	"time"
 
 	"github.com/Deymos01/pr-review-manager/internal/config"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/add"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/get"
 	"github.com/Deymos01/pr-review-manager/internal/repository/postgres"
+	"github.com/Deymos01/pr-review-manager/internal/usecase/team"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -37,7 +40,8 @@ func main() {
 			slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-	_ = storage
+
+	teamService := team.New(log, storage)
 
 	router := chi.NewRouter()
 
@@ -47,8 +51,8 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Route("/team", func(r chi.Router) {
-		r.Post("/add", nil)
-		r.Get("/get", nil)
+		r.Post("/add", add.New(log, teamService))
+		r.Get("/get", get.New(log, teamService))
 	})
 
 	router.Route("/users", func(r chi.Router) {
