@@ -37,7 +37,7 @@ func (s *Storage) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var members []string
 	for rows.Next() {
@@ -109,6 +109,22 @@ func (s *Storage) PullRequestExists(ctx context.Context, prID string) (bool, err
 	return exists, nil
 }
 
+func (s *Storage) PullRequestMerged(ctx context.Context, prID string) (bool, error) {
+	const op = "repository.postgres.PullRequestMerged"
+
+	var isMerged bool
+	query := `SELECT CASE WHEN st.name = 'MERGED' THEN TRUE ELSE FALSE END
+				FROM pull_requests pr
+				JOIN statuses st ON pr.status_id = st.id
+				WHERE pr.id = $1`
+	err := s.db.QueryRowContext(ctx, query, prID).Scan(&isMerged)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return isMerged, nil
+}
+
 func (s *Storage) MergePullRequest(ctx context.Context, prID string) error {
 	const op = "repository.postgres.MergePullRequest"
 
@@ -151,7 +167,7 @@ func (s *Storage) GetPullRequestByID(ctx context.Context, prID string) (*domains
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var reviewers []*domains.Reviewer
 	for rows.Next() {

@@ -8,4 +8,7 @@ var (
 	ErrUserNotFound        = errors.New("user not found")
 	ErrPRAlreadyExists     = errors.New("pull request already exists")
 	ErrPullRequestNotFound = errors.New("pull request not found")
+	ErrPRAlreadyMerged     = errors.New("pull request already merged")
+	ErrNoAvailableReviewer = errors.New("no available reviewer")
+	ErrUserNotAssigned     = errors.New("user not assigned to the pull request")
 )

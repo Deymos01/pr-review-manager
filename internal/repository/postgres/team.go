@@ -17,7 +17,7 @@ func (s *Storage) CreateTeam(ctx context.Context, team *domains.Team) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	query := `INSERT INTO teams (name) VALUES ($1)`
 	_, err = tx.ExecContext(ctx, query, team.Name)
@@ -66,7 +66,7 @@ func (s *Storage) GetTeamByName(ctx context.Context, name string) (*domains.Team
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var users []*domains.User
 	for rows.Next() {

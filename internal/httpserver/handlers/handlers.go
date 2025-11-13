@@ -6,4 +6,7 @@ const (
 	InvalidRequest = "INVALID_REQUEST"
 	TeamExists     = "TEAM_EXISTS"
 	PrExists       = "PR_EXISTS"
+	PrMerged       = "PR_MERGED"
+	NotAssigned    = "NOT_ASSIGNED"
+	NoCandidate    = "NO_CANDIDATE"
 )

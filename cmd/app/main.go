@@ -14,6 +14,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/config"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/create"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/merge"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/reassign"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/add"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/get"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/users/get_review"
@@ -81,7 +82,7 @@ func main() {
 
 		r.Post("/create", create.New(log, prService))
 		r.Post("/merge", merge.New(log, prService))
-		r.Post("/reassign", nil)
+		r.Post("/reassign", reassign.New(log, prService))
 	})
 
 	addr := cfg.HTTPServerConfig.Host + ":" + strconv.Itoa(cfg.HTTPServerConfig.Port)
