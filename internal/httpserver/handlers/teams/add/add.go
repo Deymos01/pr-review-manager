@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Deymos01/pr-review-manager/internal/domains"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers"
 	"github.com/Deymos01/pr-review-manager/internal/lib/api/response"
 )
 
@@ -29,11 +30,6 @@ type Response struct {
 	Team domains.Team `json:"team"`
 }
 
-const (
-	invalidRequest = "INVALID_REQUEST"
-	teamExists     = "TEAM_EXISTS"
-)
-
 func New(
 	log *slog.Logger,
 	service TeamService,
@@ -48,7 +44,7 @@ func New(
 
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).
-				Encode(response.NewErrorResponse(invalidRequest, "invalid JSON format"))
+				Encode(response.NewErrorResponse(handlers.InvalidRequest, "invalid JSON format"))
 			return
 		}
 
@@ -72,7 +68,7 @@ func New(
 
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).
-				Encode(response.NewErrorResponse(teamExists, "team_name already exists"))
+				Encode(response.NewErrorResponse(handlers.TeamExists, "team_name already exists"))
 			return
 		}
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Deymos01/pr-review-manager/internal/domains"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers"
 	"github.com/Deymos01/pr-review-manager/internal/lib/api/response"
 )
 
@@ -25,10 +26,6 @@ type Response struct {
 	Members  []MemberResponse `json:"members"`
 }
 
-const (
-	NotFound = "NOT_FOUND"
-)
-
 func New(
 	log *slog.Logger,
 	service TeamService,
@@ -44,7 +41,7 @@ func New(
 
 			w.WriteHeader(http.StatusNotFound)
 			_ = json.NewEncoder(w).
-				Encode(response.NewErrorResponse(NotFound, "resource not found"))
+				Encode(response.NewErrorResponse(handlers.NotFound, "resource not found"))
 			return
 		}
 
