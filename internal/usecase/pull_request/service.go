@@ -10,12 +10,14 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=UserRepository
 type UserRepository interface {
 	UserExists(ctx context.Context, userID string) (bool, error)
 	UserAssigned(ctx context.Context, prID, userID string) (bool, error)
 	UserHasActiveTeam(ctx context.Context, authorID string) (bool, error)
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=PullRequestRepository
 type PullRequestRepository interface {
 	CreatePullRequest(ctx context.Context, prID, prName, authorID string) ([]string, error)
 	PullRequestExists(ctx context.Context, prID string) (bool, error)

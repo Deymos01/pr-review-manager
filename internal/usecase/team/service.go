@@ -2,12 +2,15 @@ package team
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/Deymos01/pr-review-manager/internal/domains"
+	"github.com/Deymos01/pr-review-manager/internal/repository"
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=TeamRepository
 type TeamRepository interface {
 	CreateTeam(ctx context.Context, team *domains.Team) error
 	TeamExists(ctx context.Context, name string) (bool, error)
@@ -56,8 +59,13 @@ func (s *Service) GetTeam(ctx context.Context, teamName string) (*domains.Team, 
 
 	team, err := s.repo.GetTeamByName(ctx, teamName)
 	if err != nil {
+		if errors.Is(err, repository.ErrTeamNotFound) {
+			s.log.Warn("team not found", slog.String("team", teamName))
+			return nil, usecase.ErrTeamNotFound
+		}
+
 		s.log.Error("failed to get team by name", slog.String("op", op), slog.String("err", err.Error()))
-		return nil, usecase.ErrTeamNotFound
+		return nil, err
 	}
 
 	s.log.Info("team successfully retrieved", slog.String("team", teamName))

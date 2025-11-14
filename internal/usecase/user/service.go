@@ -7,6 +7,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/domains"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=UserRepository
 type UserRepository interface {
 	SetUserStatus(ctx context.Context, userID string, isActive bool) (*domains.User, error)
 	UsersReview(ctx context.Context, userID string) ([]*domains.PullRequest, error)
