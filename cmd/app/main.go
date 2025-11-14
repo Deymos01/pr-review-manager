@@ -51,7 +51,7 @@ func main() {
 
 	teamService := team.New(log, storage)
 	userService := user.New(log, storage)
-	prService := pr.New(log, storage)
+	prService := pr.New(log, storage, storage)
 
 	router := chi.NewRouter()
 

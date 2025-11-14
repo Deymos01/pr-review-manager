@@ -7,22 +7,22 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/domains"
 )
 
-type Repository interface {
+type UserRepository interface {
 	SetUserStatus(ctx context.Context, userID string, isActive bool) (*domains.User, error)
 	UsersReview(ctx context.Context, userID string) ([]*domains.PullRequest, error)
 }
 
 type Service struct {
 	log  *slog.Logger
-	repo Repository
+	repo UserRepository
 }
 
-func New(log *slog.Logger, repo Repository) *Service {
+func New(log *slog.Logger, repo UserRepository) *Service {
 	return &Service{repo: repo, log: log}
 }
 
-func (s *Service) SetIsActive(ctx context.Context, userID string, isActive bool) (*domains.User, error) {
-	const op = "usecase.user.SetIsActive"
+func (s *Service) SetUserIsActive(ctx context.Context, userID string, isActive bool) (*domains.User, error) {
+	const op = "usecase.user.SetUserIsActive"
 
 	user, err := s.repo.SetUserStatus(ctx, userID, isActive)
 	if err != nil {

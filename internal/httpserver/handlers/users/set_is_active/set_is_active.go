@@ -12,7 +12,7 @@ import (
 )
 
 type UserService interface {
-	SetIsActive(ctx context.Context, userID string, isActive bool) (*domains.User, error)
+	SetUserIsActive(ctx context.Context, userID string, isActive bool) (*domains.User, error)
 }
 
 type Request struct {
@@ -46,7 +46,7 @@ func New(
 			return
 		}
 
-		user, err := userService.SetIsActive(r.Context(), req.UserID, req.IsActive)
+		user, err := userService.SetUserIsActive(r.Context(), req.UserID, req.IsActive)
 		if err != nil {
 			log.Warn("failed to set user is_active", slog.Any("error", err))
 			w.WriteHeader(http.StatusNotFound)

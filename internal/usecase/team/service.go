@@ -8,7 +8,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
-type Repository interface {
+type TeamRepository interface {
 	CreateTeam(ctx context.Context, team *domains.Team) error
 	TeamExists(ctx context.Context, name string) (bool, error)
 	GetTeamByName(ctx context.Context, name string) (*domains.Team, error)
@@ -16,10 +16,10 @@ type Repository interface {
 
 type Service struct {
 	log  *slog.Logger
-	repo Repository
+	repo TeamRepository
 }
 
-func New(log *slog.Logger, repo Repository) *Service {
+func New(log *slog.Logger, repo TeamRepository) *Service {
 	return &Service{repo: repo, log: log}
 }
 

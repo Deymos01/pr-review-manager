@@ -10,31 +10,39 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
-type Repository interface {
+type UserRepository interface {
 	UserExists(ctx context.Context, userID string) (bool, error)
 	UserAssigned(ctx context.Context, prID, userID string) (bool, error)
 	UserHasActiveTeam(ctx context.Context, authorID string) (bool, error)
-	ReassignReviewer(ctx context.Context, prID, oldUserID string) (string, error)
+}
+
+type PullRequestRepository interface {
 	CreatePullRequest(ctx context.Context, prID, prName, authorID string) ([]string, error)
 	PullRequestExists(ctx context.Context, prID string) (bool, error)
 	PullRequestMerged(ctx context.Context, prID string) (bool, error)
 	MergePullRequest(ctx context.Context, prID string) error
 	GetPullRequestByID(ctx context.Context, prID string) (*domains.PullRequest, error)
+	ReassignReviewer(ctx context.Context, prID, oldUserID string) (string, error)
 }
 
 type Service struct {
-	log  *slog.Logger
-	repo Repository
+	log      *slog.Logger
+	userRepo UserRepository
+	prRepo   PullRequestRepository
 }
 
-func New(log *slog.Logger, repo Repository) *Service {
-	return &Service{repo: repo, log: log}
+func New(log *slog.Logger, userRepo UserRepository, prRepo PullRequestRepository) *Service {
+	return &Service{
+		log:      log,
+		userRepo: userRepo,
+		prRepo:   prRepo,
+	}
 }
 
 func (s *Service) CreatePullRequest(ctx context.Context, prID, prName, authorID string) ([]string, error) {
 	const op = "usecase.pull_request.CreatePullRequest"
 
-	ok, err := s.repo.UserExists(ctx, authorID)
+	ok, err := s.userRepo.UserExists(ctx, authorID)
 	if err != nil {
 		s.log.Error("failed to check if author exists", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
@@ -44,7 +52,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 		return nil, usecase.ErrUserNotFound
 	}
 
-	ok, err = s.repo.UserHasActiveTeam(ctx, authorID)
+	ok, err = s.userRepo.UserHasActiveTeam(ctx, authorID)
 	if err != nil {
 		s.log.Error("failed to check if author has active team", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
@@ -54,7 +62,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 		return nil, usecase.ErrTeamNotFound
 	}
 
-	assignedReviewers, err := s.repo.CreatePullRequest(ctx, prID, prName, authorID)
+	assignedReviewers, err := s.prRepo.CreatePullRequest(ctx, prID, prName, authorID)
 	if err != nil {
 		s.log.Error("failed to create pull request", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
@@ -67,7 +75,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 func (s *Service) MergePullRequest(ctx context.Context, prID string) (*domains.PullRequest, error) {
 	const op = "usecase.pull_request.MergePullRequest"
 
-	ok, err := s.repo.PullRequestExists(ctx, prID)
+	ok, err := s.prRepo.PullRequestExists(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to check if pull request exists", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
@@ -77,13 +85,13 @@ func (s *Service) MergePullRequest(ctx context.Context, prID string) (*domains.P
 		return nil, usecase.ErrPullRequestNotFound
 	}
 
-	err = s.repo.MergePullRequest(ctx, prID)
+	err = s.prRepo.MergePullRequest(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to merge pull request", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
 	}
 
-	pr, err := s.repo.GetPullRequestByID(ctx, prID)
+	pr, err := s.prRepo.GetPullRequestByID(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to get pull request", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
@@ -96,7 +104,7 @@ func (s *Service) MergePullRequest(ctx context.Context, prID string) (*domains.P
 func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) (*domains.PullRequest, string, error) {
 	const op = "usecase.pull_request.ReassignReviewer"
 
-	ok, err := s.repo.PullRequestExists(ctx, prID)
+	ok, err := s.prRepo.PullRequestExists(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to check if pull request exists", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, "", err
@@ -106,7 +114,7 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) 
 		return nil, "", usecase.ErrPullRequestNotFound
 	}
 
-	ok, err = s.repo.PullRequestMerged(ctx, prID)
+	ok, err = s.prRepo.PullRequestMerged(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to check if pull request is merged", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, "", err
@@ -116,7 +124,7 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) 
 		return nil, "", usecase.ErrPRAlreadyMerged
 	}
 
-	ok, err = s.repo.UserExists(ctx, oldUserID)
+	ok, err = s.userRepo.UserExists(ctx, oldUserID)
 	if err != nil {
 		s.log.Error("failed to check if user exists", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, "", err
@@ -126,7 +134,7 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) 
 		return nil, "", usecase.ErrUserNotFound
 	}
 
-	ok, err = s.repo.UserAssigned(ctx, prID, oldUserID)
+	ok, err = s.userRepo.UserAssigned(ctx, prID, oldUserID)
 	if err != nil {
 		s.log.Error("failed to check if user is assigned to the pull request",
 			slog.String("op", op),
@@ -140,7 +148,7 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) 
 		return nil, "", usecase.ErrUserNotAssigned
 	}
 
-	newUserID, err := s.repo.ReassignReviewer(ctx, prID, oldUserID)
+	newUserID, err := s.prRepo.ReassignReviewer(ctx, prID, oldUserID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNoCandidate) {
 			s.log.Warn("no available reviewer to reassign",
@@ -154,7 +162,7 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID, oldUserID string) 
 		return nil, "", err
 	}
 
-	pr, err := s.repo.GetPullRequestByID(ctx, prID)
+	pr, err := s.prRepo.GetPullRequestByID(ctx, prID)
 	if err != nil {
 		s.log.Error("failed to get pull request",
 			slog.String("op", op),

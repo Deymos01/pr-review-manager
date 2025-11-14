@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"math/rand"
 
 	"github.com/Deymos01/pr-review-manager/internal/domains"
+	"github.com/Deymos01/pr-review-manager/internal/repository"
 )
 
 const (
@@ -187,4 +190,54 @@ func (s *Storage) GetPullRequestByID(ctx context.Context, prID string) (*domains
 	}
 
 	return &pr, nil
+}
+
+func (s *Storage) ReassignReviewer(ctx context.Context, prID, oldUserID string) (string, error) {
+	const op = "repository.postgres.user.ReassignReviewer"
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	querySelect := `
+		SELECT u.id
+		FROM users u
+		WHERE u.team_name = (SELECT team_name FROM users WHERE id = $1) AND
+		      u.id != $1 AND u.is_active AND
+		      u.id NOT IN (SELECT author_id FROM pull_requests pr WHERE pr.id = $2) AND 
+		      u.id NOT IN (SELECT user_id 
+    						FROM reviewers 
+    						WHERE pull_request_id = $2)
+		ORDER BY RANDOM()
+		LIMIT 1;
+	`
+
+	var newUserID string
+	err = tx.QueryRowContext(ctx, querySelect, oldUserID, prID).Scan(&newUserID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", repository.ErrNoCandidate
+		}
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	queryUpdate := `
+		UPDATE reviewers
+		SET user_id = $1,
+		 	assigned_at = NOW()
+		WHERE pull_request_id = $2 AND user_id = $3;
+	`
+
+	_, err = tx.ExecContext(ctx, queryUpdate, newUserID, prID, oldUserID)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return newUserID, nil
 }
