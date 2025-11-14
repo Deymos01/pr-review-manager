@@ -31,3 +31,14 @@ tasks:
       CONFIG_PATH: "{{.CONFIG_PATH}}"
     cmds:
       - go run cmd/migrator/main.go down
+
+  integration-test:
+    desc: "Run integration tests"
+    vars:
+      CONFIG_PATH: '{{default "../configs/int_tests.yaml" .CONFIG_PATH}}'
+    env:
+      CONFIG_PATH: "{{.CONFIG_PATH}}"
+    cmds:
+      - docker compose -f ./docker/tests/docker-compose.yml up -d
+      - sleep 5
+      - go test -v -tags=integration ./tests/...

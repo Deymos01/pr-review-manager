@@ -1,5 +1,5 @@
 services:
-  db-test:
+  db:
     image: postgres:18.0
     container_name: pr_manager_db
     environment:
@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: pr_manager_db
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - pr_manager_data:/var/lib/postgresql
     healthcheck:
@@ -19,7 +19,7 @@ services:
     networks:
       - internal
 
-  migrator-test:
+  migrator:
     build:
       context: ..
       dockerfile: Dockerfile
@@ -27,17 +27,17 @@ services:
     image: pr_manager_image
     container_name: pr_manager_migrator
     depends_on:
-      db-test:
+      db:
         condition: service_healthy
     environment:
       CONFIG_PATH: ./configs/docker.yaml
-      DATABASE_HOST: db-test
+      DATABASE_HOST: db
       DATABASE_PORT: "5432"
     command: [ "/app/bin/migrator", "up" ]
     networks:
       - internal
 
-  pr_manager-test:
+  pr_manager:
     build:
       context: ..
       dockerfile: Dockerfile
@@ -52,10 +52,10 @@ services:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: pr_manager_db
-      DATABASE_HOST: db-test
+      DATABASE_HOST: db
       SERVER_PORT: "8080"
     depends_on:
-      migrator-test:
+      migrator:
         condition: service_completed_successfully
     networks:
       - internal

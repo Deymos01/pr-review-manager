@@ -20,4 +20,4 @@ COPY ../../configs ./configs
 
 EXPOSE 8080
 
-ENV CONFIG_PATH=./configs/int_tests.yaml
+ENV CONFIG_PATH=./configs/docker_tests.yaml
