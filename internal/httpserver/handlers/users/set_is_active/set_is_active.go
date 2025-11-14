@@ -11,6 +11,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/lib/api/response"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=UserService
 type UserService interface {
 	SetUserIsActive(ctx context.Context, userID string, isActive bool) (*domains.User, error)
 }

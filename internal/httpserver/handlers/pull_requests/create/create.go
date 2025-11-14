@@ -12,6 +12,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=PRService
 type PRService interface {
 	CreatePullRequest(ctx context.Context, prID, prName, authorID string) (assignedReviewers []string, err error)
 }
@@ -31,8 +32,6 @@ type Response struct {
 		AssignedReviewers []string `json:"assigned_reviewers"`
 	} `json:"pr"`
 }
-
-const ()
 
 func New(
 	log *slog.Logger,

@@ -14,6 +14,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/usecase"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=PRService
 type PRService interface {
 	MergePullRequest(ctx context.Context, prID string) (*domains.PullRequest, error)
 }

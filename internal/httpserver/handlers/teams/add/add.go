@@ -11,23 +11,27 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/lib/api/response"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=TeamService
 type TeamService interface {
 	AddTeam(ctx context.Context, team *domains.Team) (*domains.Team, error)
 }
 
-type MemberRequest struct {
+type Member struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	IsActive bool   `json:"is_active"`
 }
 
 type Request struct {
-	TeamName string          `json:"team_name"`
-	Members  []MemberRequest `json:"members"`
+	TeamName string   `json:"team_name"`
+	Members  []Member `json:"members"`
 }
 
 type Response struct {
-	Team domains.Team `json:"team"`
+	Team struct {
+		Name    string   `json:"team_name"`
+		Members []Member `json:"members"`
+	} `json:"team"`
 }
 
 func New(
@@ -72,8 +76,20 @@ func New(
 			return
 		}
 
+		var resp Response
+		resp.Team.Name = createdTeam.Name
+
+		resp.Team.Members = make([]Member, len(createdTeam.Members))
+		for i, m := range createdTeam.Members {
+			resp.Team.Members[i] = Member{
+				UserID:   m.ID,
+				Username: m.Name,
+				IsActive: m.IsActive,
+			}
+		}
+
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(Response{Team: *createdTeam}); err != nil {
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Error("failed to encode response", slog.Any("error", err))
 		}
 	}
