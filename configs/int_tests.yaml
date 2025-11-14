@@ -1,0 +1,15 @@
+env: "local"
+migrations_path: "file://./migrations"
+http_server:
+  host: "0.0.0.0"
+  port: 8082
+  timeout: 4s
+  idle_timeout: 60s
+  admin_token: "admin"
+postgres:
+  host: "db-test"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  dbname: "pr_manager_db_test"
+  ssl_mode: "disable"
