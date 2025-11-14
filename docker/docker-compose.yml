@@ -1,15 +1,15 @@
 services:
-  db:
+  db-test:
     image: postgres:18.0
-    container_name: postgres
+    container_name: pr_manager_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: pr_manager_db
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - pr_manager_data:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d pr_manager_db" ]
       interval: 5s
@@ -19,28 +19,30 @@ services:
     networks:
       - internal
 
-  migrator:
+  migrator-test:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
       target: runtime
-    container_name: migrator
+    image: pr_manager_image
+    container_name: pr_manager_migrator
     depends_on:
-      db:
+      db-test:
         condition: service_healthy
     environment:
       CONFIG_PATH: ./configs/docker.yaml
-      DATABASE_HOST: db
+      DATABASE_HOST: db-test
       DATABASE_PORT: "5432"
     command: [ "/app/bin/migrator", "up" ]
     networks:
       - internal
 
-  pr_manager:
+  pr_manager-test:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
       target: runtime
+    image: pr_manager_image
     container_name: pr_manager
     ports:
       - "8080:8080"
@@ -50,10 +52,10 @@ services:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: pr_manager_db
-      DATABASE_HOST: db
+      DATABASE_HOST: db-test
       SERVER_PORT: "8080"
     depends_on:
-      migrator:
+      migrator-test:
         condition: service_completed_successfully
     networks:
       - internal
@@ -66,4 +68,4 @@ networks:
         - subnet: 172.50.0.0/16
 
 volumes:
-  postgres_data:
+  pr_manager_data:
