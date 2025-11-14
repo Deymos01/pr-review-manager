@@ -24,6 +24,15 @@ func (s *Storage) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 	}
 	defer func() { _ = tx.Rollback() }()
 
+	queryPRExists := `SELECT EXISTS(SELECT 1 FROM pull_requests WHERE id = $1)`
+	var exists bool
+	if err = tx.QueryRowContext(ctx, queryPRExists, prID).Scan(&exists); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	if exists {
+		return nil, repository.ErrPRAlreadyExists
+	}
+
 	queryGetMembers := `
 		SELECT id
 		FROM users

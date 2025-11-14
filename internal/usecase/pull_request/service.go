@@ -66,6 +66,10 @@ func (s *Service) CreatePullRequest(ctx context.Context, prID, prName, authorID 
 
 	assignedReviewers, err := s.prRepo.CreatePullRequest(ctx, prID, prName, authorID)
 	if err != nil {
+		if errors.Is(err, repository.ErrPRAlreadyExists) {
+			s.log.Warn("pull request already exists", slog.String("pr_id", prID))
+			return nil, usecase.ErrPRAlreadyExists
+		}
 		s.log.Error("failed to create pull request", slog.String("op", op), slog.String("err", err.Error()))
 		return nil, err
 	}

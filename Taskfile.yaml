@@ -39,6 +39,7 @@ tasks:
     env:
       CONFIG_PATH: "{{.CONFIG_PATH}}"
     cmds:
-      - docker compose -f ./docker/tests/docker-compose.yml up -d
+      - docker compose -f ./docker/tests/docker-compose.yml up --build -d
       - sleep 5
       - go test -v -tags=integration ./tests/...
+      - docker compose -f ./docker/tests/docker-compose.yml down
