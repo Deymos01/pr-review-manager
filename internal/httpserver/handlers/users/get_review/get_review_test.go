@@ -98,12 +98,16 @@ func TestGetReviewHandler(t *testing.T) {
 
 			require.Equal(t, tc.userID, resp["user_id"])
 
-			pr := resp["pull_requests"].(map[string]any)
+			prs, ok := resp["pull_requests"].([]interface{})
+			require.True(t, ok, "pull_requests must be an array")
+			require.Len(t, prs, len(tc.mockReturnPRs))
 
-			require.Equal(t, tc.mockReturnPRs[0].ID, pr["pull_request_id"])
-			require.Equal(t, tc.mockReturnPRs[0].Name, pr["pull_request_name"])
-			require.Equal(t, tc.mockReturnPRs[0].Author.ID, pr["author_id"])
-			require.Equal(t, tc.mockReturnPRs[0].Status, pr["status"])
+			first := prs[0].(map[string]interface{})
+
+			require.Equal(t, tc.mockReturnPRs[0].ID, first["pull_request_id"])
+			require.Equal(t, tc.mockReturnPRs[0].Name, first["pull_request_name"])
+			require.Equal(t, tc.mockReturnPRs[0].Author.ID, first["author_id"])
+			require.Equal(t, tc.mockReturnPRs[0].Status, first["status"])
 		})
 	}
 }
