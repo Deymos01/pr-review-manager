@@ -18,7 +18,7 @@ type UserService interface {
 
 type Response struct {
 	UserID string `json:"user_id"`
-	PRs    struct {
+	PRs    []struct {
 		PrID     string `json:"pull_request_id"`
 		PrName   string `json:"pull_request_name"`
 		AuthorID string `json:"author_id"`
@@ -47,11 +47,17 @@ func New(
 
 		var resp Response
 		resp.UserID = userID
-		for _, pr := range reviews {
-			resp.PRs.PrID = pr.ID
-			resp.PRs.PrName = pr.Name
-			resp.PRs.AuthorID = pr.Author.ID
-			resp.PRs.Status = pr.Status
+		resp.PRs = make([]struct {
+			PrID     string `json:"pull_request_id"`
+			PrName   string `json:"pull_request_name"`
+			AuthorID string `json:"author_id"`
+			Status   string `json:"status"`
+		}, len(reviews))
+		for i, pr := range reviews {
+			resp.PRs[i].PrID = pr.ID
+			resp.PRs[i].PrName = pr.Name
+			resp.PRs[i].AuthorID = pr.Author.ID
+			resp.PRs[i].Status = pr.Status
 		}
 
 		w.WriteHeader(http.StatusOK)
