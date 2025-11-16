@@ -11,4 +11,5 @@ var (
 	ErrPRAlreadyMerged     = errors.New("pull request already merged")
 	ErrNoAvailableReviewer = errors.New("no available reviewer")
 	ErrUserNotAssigned     = errors.New("user not assigned to the pull request")
+	ErrTeamCompatibility   = errors.New("some users do not belong to the team")
 )

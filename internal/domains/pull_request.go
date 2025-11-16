@@ -14,3 +14,9 @@ type PullRequest struct {
 	CreatedAt         time.Time
 	MergedAt          *time.Time
 }
+
+type ReassignedPR struct {
+	PrID      string
+	OldUserID string
+	NewUserID string
+}

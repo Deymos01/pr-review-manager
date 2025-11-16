@@ -32,6 +32,45 @@ func (_m *TeamRepository) CreateTeam(ctx context.Context, _a1 *domains.Team) err
 	return r0
 }
 
+// DeactivateTeamMembers provides a mock function with given fields: ctx, teamName, userIDs
+func (_m *TeamRepository) DeactivateTeamMembers(ctx context.Context, teamName string, userIDs []string) (*domains.Team, []*domains.ReassignedPR, error) {
+	ret := _m.Called(ctx, teamName, userIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeactivateTeamMembers")
+	}
+
+	var r0 *domains.Team
+	var r1 []*domains.ReassignedPR
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, []string) (*domains.Team, []*domains.ReassignedPR, error)); ok {
+		return rf(ctx, teamName, userIDs)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, []string) *domains.Team); ok {
+		r0 = rf(ctx, teamName, userIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domains.Team)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, []string) []*domains.ReassignedPR); ok {
+		r1 = rf(ctx, teamName, userIDs)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*domains.ReassignedPR)
+		}
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, string, []string) error); ok {
+		r2 = rf(ctx, teamName, userIDs)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetTeamByName provides a mock function with given fields: ctx, name
 func (_m *TeamRepository) GetTeamByName(ctx context.Context, name string) (*domains.Team, error) {
 	ret := _m.Called(ctx, name)

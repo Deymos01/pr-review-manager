@@ -96,11 +96,32 @@ func TestReassignUser_Success(t *testing.T) {
 	usersAssignments[oldUserID] = false
 	usersAssignments[reassignOut.ReplacedBy] = true
 
-	// set not assigned users to inactive
-	for userID, assigned := range usersAssignments {
-		if !assigned {
-			setActiveStatus(t, httpClient, userID, false)
-		}
+	// set all users in team inactive
+	body = map[string]any{
+		"team_name": "backend",
+	}
+
+	data, err = json.Marshal(body)
+	require.NoError(t, err)
+
+	req, err := http.NewRequest("POST", baseURL+"/team/deactivate?team_name=backend", bytes.NewReader(data))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Admin-Token", "admin")
+
+	resp, err = httpClient.Do(req)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.NoError(t, err)
+
+	var deactivateOut TeamResponse
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&deactivateOut))
+	err = resp.Body.Close()
+	require.NoError(t, err)
+
+	for _, member := range deactivateOut.Team.Members {
+		require.False(t, member.IsActive)
 	}
 
 	// Reassign user again
@@ -124,7 +145,7 @@ func TestReassignUser_Success(t *testing.T) {
 	data, err = json.Marshal(body)
 	require.NoError(t, err)
 
-	req, err := http.NewRequest("POST", baseURL+"/pullRequest/merge", bytes.NewReader(data))
+	req, err = http.NewRequest("POST", baseURL+"/pullRequest/merge", bytes.NewReader(data))
 	require.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Admin-Token", "admin")

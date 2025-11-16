@@ -16,6 +16,7 @@ import (
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/merge"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/pull_requests/reassign"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/add"
+	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/deactivate"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/teams/get"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/users/get_review"
 	"github.com/Deymos01/pr-review-manager/internal/httpserver/handlers/users/set_is_active"
@@ -67,6 +68,7 @@ func main() {
 			r.Use(mw.AdminAuthMiddleware(cfg.AdminToken))
 
 			r.Get("/get", get.New(log, teamService))
+			r.Post("/deactivate", deactivate.New(log, teamService))
 		})
 	})
 

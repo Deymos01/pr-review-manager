@@ -57,7 +57,7 @@ type Member struct {
 	IsActive bool   `json:"is_active"`
 }
 
-type TeamAddResponse struct {
+type TeamResponse struct {
 	Team struct {
 		Name    string   `json:"team_name"`
 		Members []Member `json:"members"`

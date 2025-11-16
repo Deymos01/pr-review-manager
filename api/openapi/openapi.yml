@@ -202,6 +202,107 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
 
+  /team/deactivate:
+    post:
+      tags: [Teams]
+      summary: Деактивировать пользователей команды с переназначением их PR
+      security:
+        - AdminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [team_name, users]
+              properties:
+                team_name:
+                  type: string
+                users:
+                  type: array
+                  items:
+                    type: string
+            example:
+              team_name: backend
+              users: [u3, u7]
+      responses:
+        '200':
+          description: Пользователи деактивированы, выполнено переназначение PR
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [team, pull_requests]
+                properties:
+                  team:
+                    type: object
+                    required: [team_name, members]
+                    properties:
+                      team_name:
+                        type: string
+                      members:
+                        type: array
+                        items:
+                          type: object
+                          required: [user_id, username, is_active]
+                          properties:
+                            user_id:    { type: string }
+                            username:   { type: string }
+                            is_active:  { type: boolean }
+                  pull_requests:
+                    type: array
+                    items:
+                      type: object
+                      required: [pull_request_id, old_reviewer_id, replaced_by]
+                      properties:
+                        pull_request_id: { type: string }
+                        old_reviewer_id: { type: string }
+                        replaced_by:     { type: string }
+              example:
+                team:
+                  team_name: backend
+                  members:
+                    - { user_id: u1, username: alice, is_active: true }
+                    - { user_id: u2, username: bob, is_active: true }
+                    - { user_id: u3, username: carol, is_active: false }
+                pull_requests:
+                  - pull_request_id: pr-101
+                    old_reviewer_id: u3
+                    replaced_by: u1
+                  - pull_request_id: pr-205
+                    old_reviewer_id: u3
+                    replaced_by: u2
+
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: resource not found
+
+        '409':
+          description: Некоторые пользователи не принадлежат этой команде
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                error:
+                  code: TEAM_COMPATIBILITY_ERROR
+                  message: some users do not belong to the team
+
+        '500':
+          description: Ошибка обработки запроса
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: failed to deactivate members in team
+
   /users/setIsActive:
     post:
       tags: [Users]

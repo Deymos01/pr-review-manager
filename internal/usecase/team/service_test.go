@@ -1,6 +1,7 @@
 package team
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log/slog"
@@ -101,7 +102,7 @@ func TestService_AddTeam(t *testing.T) {
 			}
 
 			svc := New(discardLogger(), teamRepo)
-			team, err := svc.AddTeam(nil, tc.team)
+			team, err := svc.AddTeam(context.Background(), tc.team)
 
 			if tc.expectedErr != nil {
 				require.Error(t, err)
@@ -169,7 +170,7 @@ func TestService_GetTeam(t *testing.T) {
 				Once()
 
 			svc := New(discardLogger(), teamRepo)
-			team, err := svc.GetTeam(nil, "team")
+			team, err := svc.GetTeam(context.Background(), "team")
 
 			if tc.expectedErr != nil {
 				require.Error(t, err)

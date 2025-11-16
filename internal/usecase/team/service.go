@@ -15,6 +15,7 @@ type TeamRepository interface {
 	CreateTeam(ctx context.Context, team *domains.Team) error
 	TeamExists(ctx context.Context, name string) (bool, error)
 	GetTeamByName(ctx context.Context, name string) (*domains.Team, error)
+	DeactivateTeamMembers(ctx context.Context, teamName string, userIDs []string) (*domains.Team, []*domains.ReassignedPR, error)
 }
 
 type Service struct {
@@ -70,4 +71,45 @@ func (s *Service) GetTeam(ctx context.Context, teamName string) (*domains.Team, 
 
 	s.log.Info("team successfully retrieved", slog.String("team", teamName))
 	return team, nil
+}
+
+func (s *Service) DeactivateTeamMembers(
+	ctx context.Context,
+	teamName string,
+	users []string,
+) (*domains.Team, []*domains.ReassignedPR, error) {
+	const op = "usecase.team.DeactivateTeamMembers"
+
+	exists, err := s.repo.TeamExists(ctx, teamName)
+	if err != nil {
+		s.log.Error("failed to check team existence",
+			slog.String("op", op),
+			slog.Any("error", err),
+		)
+		return nil, nil, err
+	}
+	if !exists {
+		s.log.Warn("team does not exist", slog.String("team", teamName))
+		return nil, nil, usecase.ErrTeamNotFound
+	}
+
+	updatedTeam, reassignedPRs, err := s.repo.DeactivateTeamMembers(ctx, teamName, users)
+	if err != nil {
+		if errors.Is(err, repository.ErrTeamCompatibility) {
+			s.log.Warn("some users do not belong to the team",
+				slog.String("team", teamName),
+				slog.Any("users", users),
+			)
+			return nil, nil, usecase.ErrTeamCompatibility
+		}
+		s.log.Error("failed to deactivate team members",
+			slog.String("op", op),
+			slog.Any("error", err),
+			slog.String("team", teamName),
+		)
+		return nil, nil, err
+	}
+
+	s.log.Info("team members successfully deactivated", slog.String("team", teamName))
+	return updatedTeam, reassignedPRs, nil
 }

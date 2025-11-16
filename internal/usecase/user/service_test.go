@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log/slog"
@@ -64,7 +65,7 @@ func TestService_SetUserIsActive(t *testing.T) {
 				Once()
 
 			svc := New(discardLogger(), userRepo)
-			user, err := svc.SetUserIsActive(nil, tc.userID, tc.isActive)
+			user, err := svc.SetUserIsActive(context.Background(), tc.userID, tc.isActive)
 
 			if tc.expectedErr != nil {
 				require.Error(t, err)
@@ -123,7 +124,7 @@ func TestService_GetUsersReview(t *testing.T) {
 				Once()
 
 			svc := New(discardLogger(), userRepo)
-			reviews, err := svc.GetUsersReview(nil, tc.userID)
+			reviews, err := svc.GetUsersReview(context.Background(), tc.userID)
 
 			if tc.expectedErr != nil {
 				require.Error(t, err)

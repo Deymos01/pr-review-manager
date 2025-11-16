@@ -56,7 +56,7 @@ func ensureTeam(t *testing.T, teamName string, membersNames []string) {
 	require.Equal(t, http.StatusCreated, resp.StatusCode)
 
 	// Parse and check response
-	var out TeamAddResponse
+	var out TeamResponse
 	require.NoError(t, json.NewDecoder(resp.Body).Decode(&out))
 
 	assert.Equal(t, teamName, out.Team.Name)
@@ -103,27 +103,6 @@ func checkAssignment(
 	} else {
 		require.Equal(t, 0, len(reviewOut.PullRequests))
 	}
-}
-
-func setActiveStatus(t *testing.T, httpClient *http.Client, userID string, isActive bool) {
-	body := map[string]any{
-		"user_id":   userID,
-		"is_active": isActive,
-	}
-
-	data, err := json.Marshal(body)
-	require.NoError(t, err)
-
-	req, err := http.NewRequest("POST", baseURL+"/users/setIsActive", bytes.NewReader(data))
-	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Admin-Token", "admin")
-
-	resp, err := httpClient.Do(req)
-	require.NoError(t, err)
-	defer func() { _ = resp.Body.Close() }()
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
 func reassignUser(t *testing.T, httpClient *http.Client, oldUserID string, prID string) *http.Response {

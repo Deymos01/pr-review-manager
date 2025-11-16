@@ -1,12 +1,13 @@
 package handlers
 
 const (
-	NotFound       = "NOT_FOUND"
-	InternalError  = "INTERNAL_ERROR"
-	InvalidRequest = "INVALID_REQUEST"
-	TeamExists     = "TEAM_EXISTS"
-	PrExists       = "PR_EXISTS"
-	PrMerged       = "PR_MERGED"
-	NotAssigned    = "NOT_ASSIGNED"
-	NoCandidate    = "NO_CANDIDATE"
+	NotFound               = "NOT_FOUND"
+	InternalError          = "INTERNAL_ERROR"
+	InvalidRequest         = "INVALID_REQUEST"
+	TeamExists             = "TEAM_EXISTS"
+	PrExists               = "PR_EXISTS"
+	PrMerged               = "PR_MERGED"
+	NotAssigned            = "NOT_ASSIGNED"
+	NoCandidate            = "NO_CANDIDATE"
+	TeamCompatibilityError = "TEAM_COMPATIBILITY_ERROR"
 )
