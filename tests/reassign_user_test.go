@@ -99,12 +99,13 @@ func TestReassignUser_Success(t *testing.T) {
 	// set all users in team inactive
 	body = map[string]any{
 		"team_name": "backend",
+		"users":     []string{"u1", "u2", "u3", "u4", "u5", "u6", "u7"},
 	}
 
 	data, err = json.Marshal(body)
 	require.NoError(t, err)
 
-	req, err := http.NewRequest("POST", baseURL+"/team/deactivate?team_name=backend", bytes.NewReader(data))
+	req, err := http.NewRequest("POST", baseURL+"/team/deactivate", bytes.NewReader(data))
 	require.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Admin-Token", "admin")
@@ -134,8 +135,8 @@ func TestReassignUser_Success(t *testing.T) {
 	err = resp.Body.Close()
 	require.NoError(t, err)
 
-	require.Equal(t, handlers.NoCandidate, errorOut.Error.Code)
-	require.Equal(t, "no active replacement candidate in team", errorOut.Error.Message)
+	require.Equal(t, handlers.NotAssigned, errorOut.Error.Code)
+	require.Equal(t, "reviewer is not assigned to this PR", errorOut.Error.Message)
 
 	// merge pull request
 	body = map[string]any{
