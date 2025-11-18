@@ -31,7 +31,7 @@
 Из корня проекта выполните команду:
 
 ```bash
-docker compose -f ./docker/docker-compose.yml up --build -d
+docker compose up -d
 ```
 
 Или используйте Makefile:

@@ -21,7 +21,7 @@ services:
 
   migrator:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
       target: runtime
     image: pr_manager_image
@@ -39,7 +39,7 @@ services:
 
   pr_manager:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
       target: runtime
     image: pr_manager_image

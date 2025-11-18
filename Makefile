@@ -4,10 +4,10 @@ INT_CONFIG_PATH ?= ../configs/int_tests.yaml
 .PHONY: run-app stop-app migrate-up migrate-down integration-test unit-test
 
 run-app:
-	docker compose -f ./docker/docker-compose.yml up --build -d
+	docker compose up --build -d
 
 stop-app:
-	docker compose -f ./docker/docker-compose.yml down -v
+	docker compose down -v
 
 migrate-up:
 	CONFIG_PATH=$(CONFIG_PATH) go run cmd/migrator/main.go up
